@@ -1,0 +1,103 @@
+---
+title: "r-ambidexterity-solns"
+author: "Charreau Bell"
+output: html_notebook
+---
+
+# Translating Between R and Python
+Let's look at an example of some of the ways that we can leverage the underlying principles of R to make better use of tidyverse functions.
+
+```{r relevant libraries}
+library(tidyverse)
+```
+
+
+# Data Analysis
+We have the following data summarizing the sports performances of a few players.  We want to perform some analysis to understand how the players are playing.
+## Jump right in
+```{r generate data}
+#we'll use some custom-created data for simplicity
+sports_df <- tibble(player_name = c('Johnson', 'James', 'Aniston', 'Errol', 'Caine', 'Jamison'),
+                     team = c('Tigers', 'Tigers', 'Lions', 'Lions', 'Lions', 'Bears'),
+                     game_1 = c(12.2, 3.3, 32.5, 10.4, 8.45, 5.45),
+                     game_2 = c(34, 45, 23, 13, 8, 24),
+                     game_3 = c(14, 23, 76, 19, 26, 53))
+
+#let's view it
+sports_df
+```
+
+### Calculate the mean points per game
+This is extremely straightforward, but low maintainability
+```{r mean points per game}
+sports_df %>% summarise(game1_mean = mean(game_1),
+                        game2_mean = mean(game_2),
+                        game3_mean = mean(game_3))
+```
+
+This is new but good functionality using `across`
+```{r mean points per game, method 2}
+sports_df %>% summarize(across(starts_with('game'), mean))
+```
+
+### Calculate column with mean points per player
+```{r mean points per player}
+sports_df %>% 
+  rowwise() %>%
+  mutate(player_means = mean(c_across(game_1:game_3))) %>%
+  ungroup()
+```
+
+### Plot the overall game point distributions
+```{r plot overall game points distribution}
+sports_df %>%
+  ggplot() +
+  geom_boxplot(aes(x=game_1, y=-1, fill='game_1')) +
+  geom_boxplot(aes(x=game_2, y=0, fill='game_2')) +
+  geom_boxplot(aes(x=game_3, y=1, fill='game_3')) +
+  scale_x_continuous(name = 'points_scored') +
+  scale_y_continuous(name=NULL)
+```
+
+**What are the challenges of this approach?**
+This is a straightforward solution, but it has many problems.  First, it's not the most maintainable, and every single time you add another game, you'll have to manually enter another plot.  Also, this is a bit hard to read and there are extra verbs and helper functions in here that the reader would need to be familiar with.
+
+**How does the data and approach diverge from tidyverse principles?**
+First, the data here isn't tidy.  Tidyverse expects tidy data.  We also see that we're somewhat unable to use our grammar of data manipulation.  Also, we find that there's some struggle with readability.  It's not that bad, but it could definitely be better.
+
+**What is an alternate approach which is more consistent with the tidyverse principles?**
+I don't know about you, but for me, all of this seems a little...difficult.  It's difficult both in conceptualization and readability.  However, we know that the tidyverse likes tidy data.  Is this data tidy?
+
+## Alternate approach
+Tidy the data FIRST then perform analysis
+```{r tidy the data}
+sports_df_tidy <- sports_df %>%
+  pivot_longer(cols=starts_with('game'), names_to = 'game_id', values_to='points_scored')
+
+sports_df_tidy
+```
+
+```{r tidy mean points per game}
+sports_df_tidy %>%
+  group_by(game_id) %>%
+  summarise(game_means = mean(points_scored))
+```
+```{r tidy mean points per player}
+sports_df_tidy %>%
+  group_by(player_name, team) %>%
+  summarize(player_means = mean(points_scored))
+```
+
+```{r tidy plot overall game points distribution}
+sports_df_tidy %>%
+  ggplot(aes(x=points_scored, fill=game_id)) +
+  geom_boxplot()
+```
+
+Moral of the story: use your tools in the way they were conceived to be used.  Tidyverse wants to work on tidy data using its defined verbs in the grammar of data manipulation.  If you find yourself really struggling to do an analysis, start by making your data as tidy as possible.
+
+
+
+
+
+

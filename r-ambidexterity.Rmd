@@ -1,0 +1,74 @@
+---
+title: "r-ambidexterity"
+author: "Charreau Bell"
+output: html_notebook
+---
+
+# Translating Between R and Python
+Let's look at an example of some of the ways that we can leverage the underlying principles of R to make better use of tidyverse functions.
+
+```{r relevant libraries}
+library(tidyverse)
+```
+
+
+# Data Analysis
+We have the following data summarizing the sports performances of a few players.  We want to perform some analysis to understand how the players are playing.
+
+## Jump right in
+```{r generate data}
+#we'll use some custom-created data for simplicity
+sports_df <- tibble(player_name = c('Johnson', 'James', 'Aniston', 'Errol', 'Caine', 'Jamison'),
+                     team = c('Tigers', 'Tigers', 'Lions', 'Lions', 'Lions', 'Bears'),
+                     game_1 = c(12.2, 3.3, 32.5, 10.4, 8.45, 5.45),
+                     game_2 = c(34, 45, 23, 13, 8, 24),
+                     game_3 = c(14, 23, 76, 19, 26, 53))
+
+#let's view it
+sports_df
+```
+
+### Calculate the mean points per game
+```{r mean points per game}
+
+```
+
+### Calculate column with mean points per player
+```{r mean points per player}
+
+```
+
+### Plot the overall game point distributions
+```{r plot overall game points distribution}
+
+```
+
+**What are the challenges of this approach?**
+
+**How does the data and approach diverge from tidyverse principles?**
+
+**What is an alternate approach which is more consistent with the tidyverse principles?**
+
+## Alternate approach
+```{r tidy the data}
+
+```
+
+```{r tidy mean points per game}
+
+```
+```{r tidy mean points per player}
+
+```
+
+```{r tidy plot overall game points distribution}
+
+```
+
+**What were the differences between this and the first approach?  What indicators were there that this approach aligns with tidyverse principles?**
+
+
+
+
+
+
